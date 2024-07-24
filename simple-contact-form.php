@@ -23,28 +23,23 @@ if(!class_exists('ContactPlugin')){
 
             // require carbon
             require_once( MY_PLUGIN_PATH . '/vendor/autoload.php' );
-
-            // // create custom post type
-            // add_action('init', array($this, 'create_custom_post_type'));
-    
-    
-            // // add assets (js, css, etc)
-            // add_action('wp_enqueue_scripts', array($this, 'load_assets'));
-    
-            // // add shortcode
-            // add_shortcode('contact-form', array($this, 'load_shortcode'));
-    
-            // // add code to footer for custom scripting
-            // add_action('wp_footer', array($this, 'load_scripts'));
-    
-            // // create a new endpoint(register rest api)
-            // add_action('rest_api_init', array($this, 'register_rest_api'));
         }
 
         public function initialize() {
             include_once( MY_PLUGIN_PATH . '/includes/utilities.php' );
             include_once( MY_PLUGIN_PATH . '/includes/options-page.php' );
             include_once( MY_PLUGIN_PATH . '/includes/contact-form.php' );
+
+                        // Hook into the PHPMailer initialization action
+            add_action('phpmailer_init', 'configure_phpmailer');
+
+            function configure_phpmailer($phpmailer) {
+                $phpmailer->isSMTP();
+                $phpmailer->Host       = 'mailhog';
+                $phpmailer->Port       = 1025;
+                $phpmailer->SMTPAuth   = false;
+                $phpmailer->SMTPSecure = false;
+            }
             
         }
 
@@ -53,4 +48,5 @@ if(!class_exists('ContactPlugin')){
 
         $contactPlugin->initialize();
 
-}
+
+    }

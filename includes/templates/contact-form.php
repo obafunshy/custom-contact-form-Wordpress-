@@ -48,6 +48,7 @@
                         success:function(res){
 
                               form.hide();
+                              console.log(data)
 
                               $("#form_success").html(res).fadeIn();
 

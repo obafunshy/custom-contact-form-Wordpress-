@@ -6,6 +6,9 @@ add_shortcode('contact', 'show_contact_form');
 // add_action
 add_action('rest_api_init', 'create_rest_endpoint');
 
+add_action('init', 'create_submissions_page');
+
+add_action('add_meta_boxes', 'create_meta_box');
 function show_contact_form() {
     include MY_PLUGIN_PATH . 'includes/templates/contact-form.php';
 }
@@ -117,5 +120,41 @@ function handle_enquiry($data) {
       }
 
       return new WP_Rest_Response($confirmation_message, 200);
+}
+
+function create_submissions_page()
+{
+
+      // Create the submissions post type to store form submissions
+
+      $args = [
+
+            'public' => true,
+            'has_archive' => true,
+            'menu_position' => 30,
+            'publicly_queryable' => false,
+            'labels' => [
+
+                  'name' => 'Submissions',
+                  'singular_name' => 'Submission',
+                  'edit_item' => 'View Submission'
+
+            ],
+            'supports' => false,
+            'capability_type' => 'post',
+            'capabilities' => array(
+                  'create_posts' => false,
+            ),
+            'map_meta_cap' => true
+      ];
+
+      register_post_type('submission', $args);
+}
+
+function create_meta_box()
+{
+      // Create custom meta box to display submission
+
+      add_meta_box('custom_contact_form', 'Submission', 'display_submission', 'submission');
 }
     
