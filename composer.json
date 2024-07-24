@@ -1,2 +1,5 @@
 {
+    "require": {
+        "htmlburger/carbon-fields-plugin": "*"
+    }
 }
