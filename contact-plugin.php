@@ -19,7 +19,9 @@ if(!class_exists('ContactPlugin')){
     class ContactPlugin {
         public function __construct() {
 
-            define('MY_PLUGIN_PATH', plugin_dir_path(__FILE__));
+            define('MY_PLUGIN_PATH', plugin_dir_path( __FILE__ ));
+
+            define('MY_PLUGIN_URL', plugin_dir_url( __FILE__ ));
 
             // require carbon
             require_once( MY_PLUGIN_PATH . '/vendor/autoload.php' );

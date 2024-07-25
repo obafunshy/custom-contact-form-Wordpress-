@@ -1,5 +1,10 @@
 <?php 
 
+
+if (!defined('ABSPATH')) {
+    die('You cannot be here');
+}
+
  // add shortcode
 add_shortcode('contact', 'show_contact_form');
 
@@ -9,6 +14,15 @@ add_action('rest_api_init', 'create_rest_endpoint');
 add_action('init', 'create_submissions_page');
 
 add_action('add_meta_boxes', 'create_meta_box');
+
+add_action('admin_init', 'setup_search');
+
+add_filter('manage_submission_posts_columns', 'custom_submission_columns');
+
+add_action('manage_submission_posts_custom_column', 'fill_submission_columns', 10, 2);
+
+add_action('wp_enqueue_scripts', 'enqueue_custom_scripts');
+
 function show_contact_form() {
     include MY_PLUGIN_PATH . 'includes/templates/contact-form.php';
 }
@@ -20,8 +34,9 @@ function create_rest_endpoint() {
     ));
 }
 
-function handle_enquiry($data) {
-    // Handle the form data that is posted
+function handle_enquiry($data)
+{
+      // Handle the form data that is posted
 
       // Get all parameters from form
       $params = $data->get_params();
@@ -157,4 +172,119 @@ function create_meta_box()
 
       add_meta_box('custom_contact_form', 'Submission', 'display_submission', 'submission');
 }
+
+function display_submission()
+{
+      // Display individual submission data on it's page
+
+      // $postmetas = get_post_meta( get_the_ID() );
+
+      // echo '<ul>';
+
+      // foreach($postmetas as $key => $value)
+      // {
+
+      //       echo '<li><strong>' . $key . ':</strong> ' . $value[0] . '</li>';
+
+      // }
+
+      // echo '</ul>';
+
+
+      echo '<ul>';
+
+      echo '<li><strong>Name:</strong><br /> ' . esc_html(get_post_meta(get_the_ID(), 'name', true)) . '</li>';
+      echo '<li><strong>Email:</strong><br /> ' . esc_html(get_post_meta(get_the_ID(), 'email', true)) . '</li>';
+      echo '<li><strong>Phone:</strong><br /> ' . esc_html(get_post_meta(get_the_ID(), 'phone', true)) . '</li>';
+      echo '<li><strong>Message:</strong><br /> ' . esc_html(get_post_meta(get_the_ID(), 'message', true)) . '</li>';
+
+      echo '</ul>';
+}
     
+function custom_submission_columns($columns)
+{
+      // Edit the columns for the submission table
+
+      $columns = array(
+
+            'cb' => $columns['cb'],
+            'name' => __('Name', 'contact-plugin'),
+            'email' => __('Email', 'contact-plugin'),
+            'phone' => __('Phone', 'contact-plugin'),
+            'message' => __('Message', 'contact-plugin'),
+            'date' => 'Date',
+
+      );
+
+      return $columns;
+}
+
+function fill_submission_columns($column, $post_id)
+{
+      // Return meta data for individual posts on table
+
+      switch ($column) {
+
+            case 'name':
+                  echo esc_html(get_post_meta($post_id, 'name', true));
+                  break;
+
+            case 'email':
+                  echo esc_html(get_post_meta($post_id, 'email', true));
+                  break;
+
+            case 'phone':
+                  echo esc_html(get_post_meta($post_id, 'phone', true));
+                  break;
+
+            case 'message':
+                  echo esc_html(get_post_meta($post_id, 'message', true));
+                  break;
+      }
+}
+
+function setup_search()
+{
+
+      // Only apply filter to submissions page
+
+      global $typenow;
+
+      if ($typenow === 'submission') {
+
+            add_filter('posts_search', 'submission_search_override', 10, 2);
+      }
+}
+
+function submission_search_override($search, $query)
+{
+      // Override the submissions page search to include custom meta data
+
+      global $wpdb;
+
+      if ($query->is_main_query() && !empty($query->query['s'])) {
+            $sql    = "
+              or exists (
+                  select * from {$wpdb->postmeta} where post_id={$wpdb->posts}.ID
+                  and meta_key in ('name','email','phone')
+                  and meta_value like %s
+              )
+          ";
+            $like   = '%' . $wpdb->esc_like($query->query['s']) . '%';
+            $search = preg_replace(
+                  "#\({$wpdb->posts}.post_title LIKE [^)]+\)\K#",
+                  $wpdb->prepare($sql, $like),
+                  $search
+            );
+      }
+
+      return $search;
+}
+
+function enqueue_custom_scripts()
+{
+
+      // Enqueue custom css for plugin
+
+      wp_enqueue_style('contact-form-plugin', MY_PLUGIN_URL . 'assets/css/contact-plugin.css');
+}

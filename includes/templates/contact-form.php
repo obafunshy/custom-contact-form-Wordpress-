@@ -1,4 +1,4 @@
-<?php //if( get_plugin_options('contact_plugin_active') ):?>
+<?php if( get_plugin_options('contact_plugin_active') ): ?>
 
 
 <div id="form_success" style="background-color:green; color:#fff;"></div>
@@ -48,7 +48,7 @@
                         success:function(res){
 
                               form.hide();
-                              console.log(data)
+                            //   console.log(data)
 
                               $("#form_success").html(res).fadeIn();
 
@@ -70,8 +70,8 @@
 
 </script>
 
-<?php //else:?>
+<?php else:?>
 
-<!-- <p>This form is not active</p> -->
+<p>This form is not active</p>
 
-<?php //endif;?>
+<?php endif;?>
